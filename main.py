@@ -30,7 +30,7 @@ while running:
     keys = pygame.key.get_pressed()
 
     # Movimento player
-    player.move(keys)
+    player.update(keys)
 
     # Sfondo
     screen.fill(BACKGROUND_COLOR)
