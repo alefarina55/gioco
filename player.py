@@ -152,8 +152,22 @@ class Player:
 
     def draw(self, screen):
 
-        # Player
-        pygame.draw.rect(screen, (220, 220, 220), self.rect)
+        # Colore base
+        color = (220, 220, 220)
+
+        # Dash
+        if self.dashing:
+            color = (80, 180, 255)
+
+        # Attacco
+        if self.attacking:
+            color = (255, 120, 120)
+
+        # Danno
+        if self.damage_cooldown > 0:
+            color = (150, 150, 150)
+
+        pygame.draw.rect(screen, color, self.rect)
 
         # Hitbox attacco
         if self.attacking:
