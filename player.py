@@ -8,12 +8,9 @@ class Player:
 
         # movement
         self.speed = 5
-
-        # physics
         self.vel_y = 0
         self.gravity = 0.5
         self.jump_power = 10
-
         self.on_ground = False
         self.facing_right = True
 
@@ -33,9 +30,9 @@ class Player:
 
         # dash
         self.dashing = False
-        self.dash_speed = 15
         self.dash_timer = 0
         self.dash_cooldown = 0
+        self.dash_speed = 15
 
         # parry
         self.parrying = False
@@ -65,7 +62,6 @@ class Player:
     def apply_gravity(self):
 
         self.vel_y += self.gravity
-
         if self.vel_y > 15:
             self.vel_y = 15
 
@@ -78,9 +74,7 @@ class Player:
         self.on_ground = False
 
         for p in platforms:
-
             if self.rect.colliderect(p):
-
                 if self.vel_y > 0:
                     self.rect.bottom = p.top
                     self.vel_y = 0
@@ -154,7 +148,7 @@ class Player:
             if self.dash_timer <= 0:
                 self.dashing = False
 
-    # ---------------- PARry ----------------
+    # ---------------- PARRY ----------------
 
     def parry(self, keys):
 
@@ -194,26 +188,3 @@ class Player:
         self.parry(keys)
         self.apply_gravity()
         self.check_collision(platforms)
-
-    # ---------------- DRAW ----------------
-
-    def draw(self, screen):
-
-        color = (220, 220, 220)
-
-        if self.dashing:
-            color = (80, 180, 255)
-        if self.attacking:
-            color = (255, 120, 120)
-        if self.parrying:
-            color = (255, 255, 80)
-        if self.damage_cooldown > 0:
-            color = (150, 150, 150)
-
-        pygame.draw.rect(screen, color, self.rect)
-
-        if self.attacking:
-            pygame.draw.rect(screen, (255, 80, 80), self.attack_rect)
-
-        if self.elemental_attacking:
-            pygame.draw.rect(screen, (80, 180, 255), self.elemental_rect)

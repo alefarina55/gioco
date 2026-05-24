@@ -8,8 +8,7 @@ from save_system import save_game, load_game
 
 pygame.init()
 
-WIDTH = 1000
-HEIGHT = 600
+WIDTH, HEIGHT = 1000, 600
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("2D Action Game")
@@ -61,6 +60,7 @@ while running:
 
     camera_x = player.rect.x - WIDTH // 2
 
+    # ENEMIES UPDATE
     for e in enemies:
         e.update(player)
 
@@ -89,7 +89,7 @@ while running:
             if player.elemental_rect.colliderect(b.rect):
                 b.take_damage()
 
-    # ENEMY DAMAGE PLAYER
+    # DAMAGE PLAYER
     for e in enemies:
         e.attack_player(player)
 
@@ -106,41 +106,52 @@ while running:
 
     # WIN
     if not final_boss.alive:
-        print("WIN!")
+        print("YOU WIN")
         running = False
 
     # DRAW
     screen.fill(BACKGROUND)
 
+    # PLATFORMS
     for p in platforms:
         pygame.draw.rect(screen, (80, 80, 80),
-                         pygame.Rect(p.x - camera_x, p.y, p.width, p.height))
+                         (p.x - camera_x, p.y, p.width, p.height))
 
+    # CHECKPOINT
     pygame.draw.rect(screen, (80, 255, 80),
-                     pygame.Rect(checkpoint.x - camera_x, checkpoint.y, 50, 80))
+                     (checkpoint.x - camera_x, checkpoint.y, 50, 80))
 
-    # PLAYER DRAW (con camera)
-    temp = player.rect.copy()
-    temp.x -= camera_x
+    # PLAYER
+    pygame.draw.rect(screen, (220, 220, 220),
+                     (player.rect.x - camera_x, player.rect.y,
+                      player.rect.width, player.rect.height))
 
-    original = player.rect
-    player.rect = temp
+    # ATTACK VISUALS
+    if player.attacking:
+        pygame.draw.rect(screen, (255, 80, 80),
+                         (player.attack_rect.x - camera_x,
+                          player.attack_rect.y,
+                          player.attack_rect.width,
+                          player.attack_rect.height))
 
-    player.draw(screen)
+    if player.elemental_attacking:
+        pygame.draw.rect(screen, (80, 180, 255),
+                         (player.elemental_rect.x - camera_x,
+                          player.elemental_rect.y,
+                          player.elemental_rect.width,
+                          player.elemental_rect.height))
 
-    player.rect = original
-    
     # ENEMIES
     for e in enemies:
         pygame.draw.rect(screen, (200, 60, 60),
-                         pygame.Rect(e.rect.x - camera_x, e.rect.y, 50, 70))
+                         (e.rect.x - camera_x, e.rect.y, 50, 70))
 
     # BOSSES
     pygame.draw.rect(screen, (120, 0, 180),
-                     pygame.Rect(boss.rect.x - camera_x, boss.rect.y, 120, 120))
+                     (boss.rect.x - camera_x, boss.rect.y, 120, 120))
 
     pygame.draw.rect(screen, (120, 0, 180),
-                     pygame.Rect(final_boss.rect.x - camera_x, final_boss.rect.y, 120, 120))
+                     (final_boss.rect.x - camera_x, final_boss.rect.y, 120, 120))
 
     # HUD
     hp = font.render(f"HP: {player.health}", True, (255, 255, 255))
