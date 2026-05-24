@@ -6,7 +6,6 @@ class Player:
 
         self.rect = pygame.Rect(x, y, 50, 70)
 
-        # movement
         self.speed = 5
         self.vel_y = 0
         self.gravity = 0.5
@@ -14,31 +13,24 @@ class Player:
         self.on_ground = False
         self.facing_right = True
 
-        # health
         self.health = 5
         self.damage_cooldown = 0
 
-        # attack
         self.attacking = False
         self.attack_timer = 0
         self.attack_rect = pygame.Rect(0, 0, 40, 20)
 
-        # elemental
         self.elemental_attacking = False
         self.elemental_timer = 0
         self.elemental_rect = pygame.Rect(0, 0, 80, 40)
 
-        # dash
         self.dashing = False
         self.dash_timer = 0
         self.dash_cooldown = 0
         self.dash_speed = 15
 
-        # parry
         self.parrying = False
         self.parry_timer = 0
-
-    # ---------------- MOVEMENT ----------------
 
     def move(self, keys):
 
@@ -57,8 +49,6 @@ class Player:
             self.vel_y = -self.jump_power
             self.on_ground = False
 
-    # ---------------- GRAVITY ----------------
-
     def apply_gravity(self):
 
         self.vel_y += self.gravity
@@ -66,8 +56,6 @@ class Player:
             self.vel_y = 15
 
         self.rect.y += self.vel_y
-
-    # ---------------- COLLISION ----------------
 
     def check_collision(self, platforms):
 
@@ -79,8 +67,6 @@ class Player:
                     self.rect.bottom = p.top
                     self.vel_y = 0
                     self.on_ground = True
-
-    # ---------------- ATTACK ----------------
 
     def attack(self, keys):
 
@@ -102,8 +88,6 @@ class Player:
             if self.attack_timer <= 0:
                 self.attacking = False
 
-    # ---------------- ELEMENTAL ----------------
-
     def elemental_attack(self, keys):
 
         if keys[pygame.K_l] and not self.elemental_attacking:
@@ -123,8 +107,6 @@ class Player:
 
             if self.elemental_timer <= 0:
                 self.elemental_attacking = False
-
-    # ---------------- DASH ----------------
 
     def dash(self, keys):
 
@@ -148,8 +130,6 @@ class Player:
             if self.dash_timer <= 0:
                 self.dashing = False
 
-    # ---------------- PARRY ----------------
-
     def parry(self, keys):
 
         if keys[pygame.K_k] and not self.parrying:
@@ -157,13 +137,9 @@ class Player:
             self.parry_timer = 15
 
         if self.parrying:
-
             self.parry_timer -= 1
-
             if self.parry_timer <= 0:
                 self.parrying = False
-
-    # ---------------- DAMAGE ----------------
 
     def take_damage(self):
 
@@ -173,8 +149,6 @@ class Player:
         if self.damage_cooldown == 0:
             self.health -= 1
             self.damage_cooldown = 60
-
-    # ---------------- UPDATE ----------------
 
     def update(self, keys, platforms):
 
