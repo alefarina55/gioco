@@ -16,19 +16,25 @@ class Player:
 
         # Stato
         self.on_ground = False
-
-        # Direzione player
         self.facing_right = True
 
         # Attacco
         self.attacking = False
         self.attack_timer = 0
-
         self.attack_rect = pygame.Rect(0, 0, 40, 20)
+
+        # Dash
+        self.dashing = False
+        self.dash_speed = 15
+        self.dash_timer = 0
+        self.dash_cooldown = 0
 
     def move(self, keys):
 
-        # Movimento orizzontale
+        # Durante il dash blocca movimento normale
+        if self.dashing:
+            return
+
         if keys[pygame.K_a]:
             self.rect.x -= self.speed
             self.facing_right = False
@@ -64,6 +70,32 @@ class Player:
             if self.attack_timer <= 0:
                 self.attacking = False
 
+    def dash(self, keys):
+
+        # Cooldown
+        if self.dash_cooldown > 0:
+            self.dash_cooldown -= 1
+
+        # Attiva dash
+        if keys[pygame.K_LSHIFT] and not self.dashing and self.dash_cooldown == 0:
+
+            self.dashing = True
+            self.dash_timer = 10
+            self.dash_cooldown = 40
+
+        # Movimento dash
+        if self.dashing:
+
+            if self.facing_right:
+                self.rect.x += self.dash_speed
+            else:
+                self.rect.x -= self.dash_speed
+
+            self.dash_timer -= 1
+
+            if self.dash_timer <= 0:
+                self.dashing = False
+
     def apply_gravity(self):
 
         self.vel_y += self.gravity
@@ -81,6 +113,7 @@ class Player:
 
             if self.rect.colliderect(platform):
 
+                # Collisione dall'alto
                 if self.vel_y > 0:
 
                     self.rect.bottom = platform.top
@@ -92,6 +125,8 @@ class Player:
         self.move(keys)
 
         self.attack(keys)
+
+        self.dash(keys)
 
         self.apply_gravity()
 
