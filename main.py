@@ -25,15 +25,11 @@ spawn_x, spawn_y = load_game()
 
 player = Player(spawn_x, spawn_y)
 
-# ---------------- ENEMIES ----------------
-
 enemies = [
     Enemy(600, 480),
     Enemy(1000, 480),
     Enemy(1400, 480),
 ]
-
-# ---------------- BOSSES ----------------
 
 boss = Boss(1700, 430)
 final_boss = Boss(3000, 430)
@@ -41,30 +37,21 @@ final_boss = Boss(3000, 430)
 boss_active = False
 final_boss_active = False
 
-# ---------------- PLATFORMS ----------------
-
 platforms = [
     pygame.Rect(0, 550, 4000, 50),
-
     pygame.Rect(300, 450, 200, 20),
     pygame.Rect(700, 350, 200, 20),
     pygame.Rect(1100, 420, 250, 20),
-
     pygame.Rect(1600, 300, 200, 20),
-
     pygame.Rect(2200, 450, 200, 20),
     pygame.Rect(2600, 350, 200, 20),
 ]
-
-# ---------------- CHECKPOINT ----------------
 
 checkpoint = pygame.Rect(2100, 470, 50, 80)
 
 running = True
 
 while running:
-
-    # ---------------- EVENTS ----------------
 
     for event in pygame.event.get():
 
@@ -73,18 +60,14 @@ while running:
 
     keys = pygame.key.get_pressed()
 
-    # ---------------- PLAYER ----------------
-
     player.update(keys, platforms)
 
     camera_x = player.rect.x - WIDTH // 2
 
-    # ---------------- ENEMIES ----------------
-
     for e in enemies:
         e.update(player)
 
-    # DAMAGE ENEMIES
+    # PLAYER ATTACKS ENEMIES
 
     for e in enemies:
 
@@ -92,11 +75,12 @@ while running:
             if player.attack_rect.colliderect(e.rect):
                 e.take_damage()
 
-        if player.elemental_attacking and e.alive:
-            if player.elemental_rect.colliderect(e.rect):
+        for projectile in player.projectiles:
+            if e.alive and projectile.rect.colliderect(e.rect):
                 e.take_damage()
+                projectile.alive = False
 
-    # ---------------- ACTIVATE MID BOSS ----------------
+    # MID BOSS ACTIVATION
 
     if not boss_active:
 
@@ -109,7 +93,7 @@ while running:
         if all_dead:
             boss_active = True
 
-    # ---------------- MID BOSS ----------------
+    # MID BOSS
 
     if boss_active and boss.alive:
 
@@ -119,18 +103,17 @@ while running:
             if player.attack_rect.colliderect(boss.rect):
                 boss.take_damage()
 
-        if player.elemental_attacking:
-            if player.elemental_rect.colliderect(boss.rect):
+        for projectile in player.projectiles:
+            if projectile.rect.colliderect(boss.rect):
                 boss.take_damage()
+                projectile.alive = False
 
-        boss.attack_player(player)
-
-    # ---------------- ACTIVATE FINAL BOSS ----------------
+    # FINAL BOSS ACTIVATION
 
     if boss_active and not boss.alive:
         final_boss_active = True
 
-    # ---------------- FINAL BOSS ----------------
+    # FINAL BOSS
 
     if final_boss_active and final_boss.alive:
 
@@ -140,38 +123,35 @@ while running:
             if player.attack_rect.colliderect(final_boss.rect):
                 final_boss.take_damage()
 
-        if player.elemental_attacking:
-            if player.elemental_rect.colliderect(final_boss.rect):
+        for projectile in player.projectiles:
+            if projectile.rect.colliderect(final_boss.rect):
                 final_boss.take_damage()
+                projectile.alive = False
 
-        final_boss.attack_player(player)
-
-    # ---------------- DAMAGE PLAYER ----------------
+    # ENEMY DAMAGE
 
     for e in enemies:
         e.attack_player(player)
 
-    # ---------------- CHECKPOINT ----------------
+    # CHECKPOINT
 
     if player.rect.colliderect(checkpoint):
         save_game(player.rect.x, player.rect.y)
 
-    # ---------------- GAME OVER ----------------
+    # GAME OVER
 
     if player.health <= 0:
         running = False
 
-    # ---------------- WIN ----------------
+    # WIN
 
     if final_boss_active and not final_boss.alive:
         print("YOU WIN")
         running = False
 
-    # ---------------- DRAW ----------------
+    # DRAW
 
     screen.fill(BACKGROUND)
-
-    # Platforms
 
     for p in platforms:
 
@@ -181,15 +161,13 @@ while running:
             (p.x - camera_x, p.y, p.width, p.height)
         )
 
-    # Checkpoint
-
     pygame.draw.rect(
         screen,
         (80, 255, 80),
         (checkpoint.x - camera_x, checkpoint.y, 50, 80)
     )
 
-    # Player
+    # PLAYER
 
     pygame.draw.rect(
         screen,
@@ -202,7 +180,7 @@ while running:
         )
     )
 
-    # Attack
+    # SWORD ATTACK
 
     if player.attacking:
 
@@ -217,22 +195,12 @@ while running:
             )
         )
 
-    # Elemental
+    # PLAYER PROJECTILES
 
-    if player.elemental_attacking:
+    for projectile in player.projectiles:
+        projectile.draw(screen, camera_x)
 
-        pygame.draw.rect(
-            screen,
-            (80, 180, 255),
-            (
-                player.elemental_rect.x - camera_x,
-                player.elemental_rect.y,
-                player.elemental_rect.width,
-                player.elemental_rect.height
-            )
-        )
-
-    # Enemies
+    # ENEMIES
 
     for e in enemies:
 
@@ -249,7 +217,7 @@ while running:
                 )
             )
 
-    # Mid Boss
+    # MID BOSS
 
     if boss_active and boss.alive:
 
@@ -264,7 +232,10 @@ while running:
             )
         )
 
-    # Final Boss
+        for projectile in boss.projectiles:
+            projectile.draw(screen, camera_x)
+
+    # FINAL BOSS
 
     if final_boss_active and final_boss.alive:
 
@@ -278,6 +249,9 @@ while running:
                 final_boss.rect.height
             )
         )
+
+        for projectile in final_boss.projectiles:
+            projectile.draw(screen, camera_x)
 
     # HUD
 

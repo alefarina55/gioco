@@ -1,4 +1,5 @@
 import pygame
+from projectile import Projectile
 
 class Player:
 
@@ -20,9 +21,8 @@ class Player:
         self.attack_timer = 0
         self.attack_rect = pygame.Rect(0, 0, 40, 20)
 
-        self.elemental_attacking = False
-        self.elemental_timer = 0
-        self.elemental_rect = pygame.Rect(0, 0, 80, 40)
+        self.projectiles = []
+        self.elemental_cooldown = 0
 
         self.dashing = False
         self.dash_timer = 0
@@ -52,6 +52,7 @@ class Player:
     def apply_gravity(self):
 
         self.vel_y += self.gravity
+
         if self.vel_y > 15:
             self.vel_y = 15
 
@@ -62,7 +63,9 @@ class Player:
         self.on_ground = False
 
         for p in platforms:
+
             if self.rect.colliderect(p):
+
                 if self.vel_y > 0:
                     self.rect.bottom = p.top
                     self.vel_y = 0
@@ -90,23 +93,32 @@ class Player:
 
     def elemental_attack(self, keys):
 
-        if keys[pygame.K_l] and not self.elemental_attacking:
-            self.elemental_attacking = True
-            self.elemental_timer = 20
+        if self.elemental_cooldown > 0:
+            self.elemental_cooldown -= 1
 
-        if self.elemental_attacking:
+        if keys[pygame.K_l] and self.elemental_cooldown == 0:
 
-            self.elemental_timer -= 1
+            direction = 1
 
-            if self.facing_right:
-                self.elemental_rect.x = self.rect.right
-            else:
-                self.elemental_rect.x = self.rect.left - self.elemental_rect.width
+            if not self.facing_right:
+                direction = -1
 
-            self.elemental_rect.y = self.rect.y + 10
+            projectile = Projectile(
+                self.rect.centerx,
+                self.rect.centery,
+                direction,
+                (80, 180, 255),
+                12
+            )
 
-            if self.elemental_timer <= 0:
-                self.elemental_attacking = False
+            self.projectiles.append(projectile)
+
+            self.elemental_cooldown = 30
+
+        for projectile in self.projectiles:
+            projectile.update()
+
+        self.projectiles = [p for p in self.projectiles if p.alive]
 
     def dash(self, keys):
 
@@ -137,7 +149,9 @@ class Player:
             self.parry_timer = 15
 
         if self.parrying:
+
             self.parry_timer -= 1
+
             if self.parry_timer <= 0:
                 self.parrying = False
 

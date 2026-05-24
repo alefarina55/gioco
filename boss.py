@@ -1,4 +1,5 @@
 import pygame
+from projectile import Projectile
 
 class Boss:
 
@@ -6,22 +7,59 @@ class Boss:
 
         self.rect = pygame.Rect(x, y, 120, 120)
 
-        self.health = 15
+        self.health = 20
         self.alive = True
 
         self.speed = 2
 
+        self.projectiles = []
+
         self.attack_cooldown = 0
 
-    def move_towards_player(self, player):
+    def update(self, player):
 
         if not self.alive:
             return
 
-        if player.rect.x > self.rect.x:
-            self.rect.x += self.speed
-        else:
-            self.rect.x -= self.speed
+        distance = player.rect.centerx - self.rect.centerx
+
+        if abs(distance) > 300:
+
+            if distance > 0:
+                self.rect.x += self.speed
+            else:
+                self.rect.x -= self.speed
+
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= 1
+
+        if abs(distance) <= 350 and self.attack_cooldown == 0:
+
+            direction = 1
+
+            if distance < 0:
+                direction = -1
+
+            projectile = Projectile(
+                self.rect.centerx,
+                self.rect.centery,
+                direction,
+                (255, 80, 80),
+                8
+            )
+
+            self.projectiles.append(projectile)
+
+            self.attack_cooldown = 60
+
+        for projectile in self.projectiles:
+            projectile.update()
+
+            if projectile.rect.colliderect(player.rect):
+                player.take_damage()
+                projectile.alive = False
+
+        self.projectiles = [p for p in self.projectiles if p.alive]
 
     def take_damage(self):
 
@@ -31,20 +69,4 @@ class Boss:
             self.alive = False
 
     def attack_player(self, player):
-
-        if not self.alive:
-            return
-
-        if self.rect.colliderect(player.rect):
-
-            player.take_damage()
-
-    def update(self, player):
-
-        self.move_towards_player(player)
-        self.attack_player(player)
-
-    def draw(self, screen):
-
-        if self.alive:
-            pygame.draw.rect(screen, (120, 0, 180), self.rect)
+        pass
