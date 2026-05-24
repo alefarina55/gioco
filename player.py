@@ -23,6 +23,11 @@ class Player:
         self.attack_timer = 0
         self.attack_rect = pygame.Rect(0, 0, 40, 20)
 
+        # Attacco elementale
+        self.elemental_attacking = False
+        self.elemental_timer = 0
+        self.elemental_rect = pygame.Rect(0, 0, 80, 40)
+
         # Dash
         self.dashing = False
         self.dash_speed = 15
@@ -34,6 +39,10 @@ class Player:
 
         # Invulnerabilità temporanea
         self.damage_cooldown = 0
+
+        # Parry
+        self.parrying = False
+        self.parry_timer = 0
 
     def move(self, keys):
 
@@ -76,6 +85,27 @@ class Player:
             if self.attack_timer <= 0:
                 self.attacking = False
 
+    def elemental_attack(self, keys):
+
+        if keys[pygame.K_l] and not self.elemental_attacking:
+
+            self.elemental_attacking = True
+            self.elemental_timer = 20
+
+        if self.elemental_attacking:
+
+            self.elemental_timer -= 1
+
+            if self.facing_right:
+                    self.elemental_rect.x = self.rect.right
+            else:
+                self.elemental_rect.x = self.rect.left - 80
+
+            self.elemental_rect.y = self.rect.y + 10
+
+            if self.elemental_timer <= 0:
+                self.elemental_attacking = False
+
     def dash(self, keys):
 
         # Cooldown
@@ -101,6 +131,20 @@ class Player:
 
             if self.dash_timer <= 0:
                 self.dashing = False
+
+    def parry(self, keys):
+
+        if keys[pygame.K_k] and not self.parrying:
+
+            self.parrying = True
+            self.parry_timer = 15
+
+        if self.parrying:
+
+            self.parry_timer -= 1
+
+            if self.parry_timer <= 0:
+                self.parrying = False
 
     def apply_gravity(self):
 
@@ -128,11 +172,15 @@ class Player:
 
     def take_damage(self):
 
+        # Parry blocca danno
+        if self.parrying:
+            return
+
         if self.damage_cooldown == 0:
 
             self.health -= 1
 
-            self.damage_cooldown = 60
+            self.damage_cooldown = 60 
 
     def update(self, keys, platforms):
 
@@ -143,6 +191,10 @@ class Player:
         self.move(keys)
 
         self.attack(keys)
+
+        self.elemental_attack(keys)
+
+        self.parry(keys)
 
         self.dash(keys)
 
@@ -162,6 +214,14 @@ class Player:
         # Attacco
         if self.attacking:
             color = (255, 120, 120)
+
+        # Attacco elementale
+        if self.elemental_attacking:
+            pygame.draw.rect(screen, (80, 180, 255), self.elemental_rect)
+
+        # Parry
+        if self.parrying:
+            color = (255, 255, 80)
 
         # Danno
         if self.damage_cooldown > 0:

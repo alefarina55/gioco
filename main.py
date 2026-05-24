@@ -26,7 +26,12 @@ font = pygame.font.SysFont(None, 40)
 # Player
 player = Player(100, 300)
 
-enemy = Enemy(600, 480)
+enemies = [
+    Enemy(600, 480),
+    Enemy(1000, 480),
+    Enemy(1400, 480),
+    Enemy(1900, 480),
+]
 
 # Piattaforme
 platforms = [
@@ -53,16 +58,27 @@ while running:
 
     # Update player
     player.update(keys, platforms)
-    enemy.update(player)
+    for enemy in enemies:
+        enemy.update(player)
 
     # Camera segue player
     camera_x = player.rect.x - WIDTH // 2
 
-    if player.attacking and enemy.alive:
+    for enemy in enemies:
 
-        if player.attack_rect.colliderect(enemy.rect):
+        if player.attacking and enemy.alive:
 
-            enemy.take_damage()
+            if player.attack_rect.colliderect(enemy.rect):
+
+                enemy.take_damage()
+
+    for enemy in enemies:
+
+        if player.elemental_attacking and enemy.alive:
+
+            if player.elemental_rect.colliderect(enemy.rect):
+
+                enemy.take_damage()
 
     # Disegna sfondo
     screen.fill(BACKGROUND_COLOR)
@@ -91,15 +107,17 @@ while running:
     player.rect = original_rect
 
     # Disegno nemico con camera
-    shifted_enemy = enemy.rect.copy()
-    shifted_enemy.x -= camera_x
+    for enemy in enemies:
 
-    original_enemy_rect = enemy.rect
-    enemy.rect = shifted_enemy
+        shifted_enemy = enemy.rect.copy()
+        shifted_enemy.x -= camera_x
 
-    enemy.draw(screen)
+        original_enemy_rect = enemy.rect
+        enemy.rect = shifted_enemy
 
-    enemy.rect = original_enemy_rect
+        enemy.draw(screen)
+
+        enemy.rect = original_enemy_rect
 
     #Game over
     if player.health <= 0:
